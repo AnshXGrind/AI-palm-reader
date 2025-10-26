@@ -153,7 +153,17 @@ export default function CameraCapture({ onPhotoCapture, onClose }: CameraCapture
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
 
-      console.log('Frame drawn to canvas, canvas dimensions:', canvas.width, 'x', canvas.height)
+      console.log('📷 Frame drawn to canvas, dimensions:', canvas.width, 'x', canvas.height)
+
+      // Add a brief flash effect to indicate photo was taken
+      if (video.parentElement) {
+        video.parentElement.style.background = 'white'
+        setTimeout(() => {
+          if (video.parentElement) {
+            video.parentElement.style.background = ''
+          }
+        }, 100)
+      }
 
       // Convert canvas to blob with timeout
       const blob = await new Promise<Blob | null>((resolve, reject) => {
@@ -167,19 +177,30 @@ export default function CameraCapture({ onPhotoCapture, onClose }: CameraCapture
         }, 'image/jpeg', 0.9)
       })
 
-      if (blob && blob.size > 0) {
-        console.log('Photo captured successfully, size:', blob.size, 'bytes')
-        const file = new File([blob], `palm-photo-${Date.now()}.jpg`, { type: 'image/jpeg' })
+      if (blob && blob.size > 1000) { // Ensure minimum reasonable file size
+        console.log('✅ Photo captured successfully! Size:', blob.size, 'bytes')
+        const file = new File([blob], `palm-photo-${Date.now()}.jpg`, { 
+          type: 'image/jpeg',
+          lastModified: Date.now()
+        })
         
-        // Test if the file was created properly
-        console.log('Created file:', file.name, file.size, file.type)
+        console.log('📁 File created:', {
+          name: file.name,
+          size: file.size,
+          type: file.type
+        })
         
+        console.log('📤 Sending photo to parent component...')
         onPhotoCapture(file)
+        
+        console.log('🔄 Stopping camera and closing modal...')
         stopCamera()
         onClose()
+        
+        console.log('✨ Photo capture completed successfully!')
       } else {
-        console.error('Failed to create blob from canvas or blob is empty')
-        setError('Failed to capture photo. The image might be empty. Please try again.')
+        console.error('❌ Blob is too small or empty. Size:', blob?.size || 0)
+        setError('Photo capture failed - image is empty or too small. Please ensure the camera is working and try again.')
       }
     } catch (error) {
       console.error('Capture error:', error)
@@ -226,6 +247,10 @@ export default function CameraCapture({ onPhotoCapture, onClose }: CameraCapture
                 autoPlay
                 playsInline
                 className="camera-video"
+              />
+              <canvas
+                ref={canvasRef}
+                className="capture-canvas"
               />
               <div className="palm-guide">
                 <div className="guide-outline">
