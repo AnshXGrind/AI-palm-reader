@@ -543,9 +543,13 @@ body {
 
 .camera-video {
   width: 100%;
-  max-width: 500px;
-  border-radius: 10px;
+  max-width: 640px;
+  height: auto;
+  min-height: 360px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   background: #000;
+  object-fit: cover;
 }
 
 .palm-guide {
