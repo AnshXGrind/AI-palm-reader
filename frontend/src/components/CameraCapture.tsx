@@ -10,83 +10,146 @@ export default function CameraCapture({ onPhotoCapture, onClose }: CameraCapture
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isStreaming, setIsStreaming] = useState(false)
   const [isCapturing, setIsCapturing] = useState(false)
+  const [isStarting, setIsStarting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const startCamera = useCallback(async () => {
+    console.log('🎬 Starting camera...')
+    
+    setIsStarting(true)
+    
     try {
       setError(null)
-      console.log('Requesting camera access...')
+      console.log('📱 Requesting camera access...')
       
       // First check if getUserMedia is available
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.error('❌ Camera API not available')
         setError('Camera API not available in this browser. Please use file upload instead.')
         return
       }
       
-      const stream = await navigator.mediaDevices.getUserMedia({
+      console.log('📹 Getting user media...')
+      const constraints = {
         video: { 
           facingMode: 'user',
           width: { ideal: 1280, min: 640 },
           height: { ideal: 720, min: 480 }
         }
+      }
+      console.log('📝 Camera constraints:', constraints)
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints)
+      
+      console.log('✅ Camera stream obtained:', stream)
+      console.log('📊 Stream tracks:', stream.getTracks().map(track => ({
+        kind: track.kind,
+        enabled: track.enabled,
+        readyState: track.readyState
+      })))
+      
+      if (!videoRef.current) {
+        console.error('❌ Video ref not available')
+        setError('Video element not ready. Please try again.')
+        return
+      }
+      
+      const video = videoRef.current
+      console.log('📺 Setting video source...')
+      video.srcObject = stream
+      
+      // Wait for video to be ready with better handling
+      console.log('⏳ Waiting for video to load...')
+      
+      const waitForVideo = () => {
+        return new Promise<void>((resolve, reject) => {
+          let resolved = false
+          
+          const handleLoadedMetadata = () => {
+            if (resolved) return
+            console.log('📋 Video metadata loaded, dimensions:', video.videoWidth, 'x', video.videoHeight)
+            
+            // Start playing the video
+            video.play().then(() => {
+              if (resolved) return
+              resolved = true
+              console.log('▶️ Video playing successfully!')
+              console.log('🎯 Setting streaming state to true...')
+              setIsStreaming(true)
+              resolve()
+            }).catch((playError) => {
+              if (resolved) return
+              resolved = true
+              console.error('❌ Video play failed:', playError)
+              reject(playError)
+            })
+          }
+          
+          const handleError = (e: any) => {
+            if (resolved) return
+            resolved = true
+            console.error('❌ Video error:', e)
+            reject(new Error('Video playback failed'))
+          }
+          
+          video.addEventListener('loadedmetadata', handleLoadedMetadata)
+          video.addEventListener('error', handleError)
+          
+          // Cleanup function
+          const cleanup = () => {
+            video.removeEventListener('loadedmetadata', handleLoadedMetadata)
+            video.removeEventListener('error', handleError)
+          }
+          
+          // Timeout after 15 seconds
+          const timeout = setTimeout(() => {
+            if (resolved) return
+            resolved = true
+            cleanup()
+            console.error('⏰ Video initialization timeout')
+            reject(new Error('Video failed to initialize within 15 seconds'))
+          }, 15000)
+          
+          // Clean up timeout when resolved
+          const originalResolve = resolve
+          const originalReject = reject
+          resolve = (...args) => {
+            cleanup()
+            clearTimeout(timeout)
+            originalResolve(...args)
+          }
+          reject = (...args) => {
+            cleanup()
+            clearTimeout(timeout)
+            originalReject(...args)
+          }
+        })
+      }
+      
+      await waitForVideo()
+      console.log('🎉 Camera started successfully!')
+      
+    } catch (err: any) {
+      console.error('💥 Camera access error:', err)
+      console.log('Error details:', {
+        name: err.name,
+        message: err.message,
+        stack: err.stack
       })
       
-      console.log('Camera stream obtained:', stream)
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        
-        // Wait for video to be ready
-        const waitForVideo = () => {
-          return new Promise<void>((resolve, reject) => {
-            if (!videoRef.current) {
-              reject(new Error('Video element not available'))
-              return
-            }
-            
-            const video = videoRef.current
-            
-            video.onloadedmetadata = () => {
-              console.log('Video metadata loaded, dimensions:', video.videoWidth, 'x', video.videoHeight)
-              
-              // Start playing the video
-              video.play().then(() => {
-                console.log('Video playing successfully')
-                setIsStreaming(true)
-                resolve()
-              }).catch((playError) => {
-                console.error('Video play failed:', playError)
-                reject(playError)
-              })
-            }
-            
-            video.onerror = (e) => {
-              console.error('Video error:', e)
-              reject(new Error('Video playback failed'))
-            }
-            
-            // Timeout after 10 seconds
-            setTimeout(() => {
-              if (!video.videoWidth || !video.videoHeight) {
-                reject(new Error('Video failed to initialize within timeout'))
-              }
-            }, 10000)
-          })
-        }
-        
-        await waitForVideo()
-      }
-    } catch (err: any) {
-      console.error('Camera access error:', err)
       if (err.name === 'NotAllowedError') {
         setError('Camera permission denied. Please allow camera access and try again.')
       } else if (err.name === 'NotFoundError') {
-        setError('No camera found. Please use file upload instead.')
+        setError('No camera found. Please check if your camera is connected and try again.')
       } else if (err.name === 'NotSupportedError') {
-        setError('Camera not supported in this browser. Please use file upload instead.')
+        setError('Camera not supported in this browser. Please try a different browser or use file upload.')
+      } else if (err.name === 'NotReadableError') {
+        setError('Camera is being used by another application. Please close other apps using the camera.')
       } else {
         setError(`Camera error: ${err.message || 'Please check permissions or use file upload instead.'}`)
       }
+    } finally {
+      setIsStarting(false)
     }
   }, [])
 
@@ -236,8 +299,15 @@ export default function CameraCapture({ onPhotoCapture, onClose }: CameraCapture
               <div className="camera-icon">📱</div>
               <h4>Ready to capture your palm?</h4>
               <p>Make sure you have good lighting and hold your palm clearly in view</p>
-              <button onClick={startCamera} className="start-camera-button">
-                Start Camera
+              <button 
+                onClick={() => {
+                  console.log('🔘 Start Camera button clicked!')
+                  startCamera()
+                }} 
+                className="start-camera-button"
+                disabled={isStarting}
+              >
+                {isStarting ? '⏳ Starting Camera...' : '🎥 Start Camera'}
               </button>
             </div>
           ) : (
