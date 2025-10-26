@@ -6,7 +6,7 @@ interface AnalysisResult {
 }
 
 interface ResultDisplayProps {
-  result: AnalysisResult
+  result: AnalysisResult | null
   loading: boolean
 }
 
@@ -21,7 +21,7 @@ export default function ResultDisplay({ result, loading }: ResultDisplayProps) {
     )
   }
 
-  if (!result || Object.keys(result).length === 0) {
+  if (!result) {
     return null
   }
 
@@ -53,7 +53,7 @@ export default function ResultDisplay({ result, loading }: ResultDisplayProps) {
               <p><strong>Total line length:</strong> {result.lines.reduce((sum, line) => sum + line.length, 0)}px</p>
               <details>
                 <summary>Technical Details</summary>
-                <pre style={{ fontSize: '0.8rem', overflow: 'auto' }}>
+                <pre className="technical-details">
                   {JSON.stringify(result.lines, null, 2)}
                 </pre>
               </details>

@@ -1,36 +1,36 @@
 {
-  expo: {
-    name: "AI Palm Reader",
-    slug: "ai-palm-reader",
-    version: "1.0.0",
-    orientation: "portrait",
-    icon: "./assets/icon.png",
-    userInterfaceStyle: "automatic",
-    splash: {
-      image: "./assets/splash.png",
-      resizeMode: "contain",
-      backgroundColor: "#667eea"
+  "expo": {
+    "name": "AI Palm Reader",
+    "slug": "ai-palm-reader",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#667eea"
     },
-    assetBundlePatterns: [
+    "assetBundlePatterns": [
       "**/*"
     ],
-    ios: {
-      supportsTablet: true,
-      infoPlist: {
-        NSCameraUsageDescription: "This app uses the camera to capture palm photos for AI analysis."
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to capture palm photos for AI analysis."
       }
     },
-    android: {
-      adaptiveIcon: {
-        foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#667eea"
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#667eea"
       },
-      permissions: ["CAMERA", "WRITE_EXTERNAL_STORAGE"]
+      "permissions": ["CAMERA", "WRITE_EXTERNAL_STORAGE"]
     },
-    web: {
-      favicon: "./assets/favicon.png"
+    "web": {
+      "favicon": "./assets/favicon.png"
     },
-    plugins: [
+    "plugins": [
       "expo-camera"
     ]
   }

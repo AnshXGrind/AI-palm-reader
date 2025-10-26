@@ -39,7 +39,7 @@ export default function Home() {
         </div>
         
         <div className="feature-card">
-          <div className="feature-icon">�</div>
+          <div className="feature-icon">📱</div>
           <h3>Live Camera Capture</h3>
           <p>Take photos directly with your device camera or upload existing images</p>
         </div>
