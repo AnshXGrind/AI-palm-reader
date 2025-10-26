@@ -9,10 +9,14 @@ export default function CameraCapture({ onPhotoCapture, onClose }: CameraCapture
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isStreaming, setIsStreaming] = useState(false)
+  const [isCapturing, setIsCapturing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const startCamera = useCallback(async () => {
     try {
+      setError(null)
+      console.log('Requesting camera access...')
+      
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { 
           facingMode: 'user',
@@ -23,12 +27,28 @@ export default function CameraCapture({ onPhotoCapture, onClose }: CameraCapture
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        setIsStreaming(true)
-        setError(null)
+        
+        // Wait for video metadata to load
+        videoRef.current.onloadedmetadata = () => {
+          console.log('Video metadata loaded, dimensions:', videoRef.current?.videoWidth, 'x', videoRef.current?.videoHeight)
+          setIsStreaming(true)
+        }
+        
+        // Handle video errors
+        videoRef.current.onerror = (e) => {
+          console.error('Video error:', e)
+          setError('Video playback failed. Please try again.')
+        }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Camera access error:', err)
-      setError('Could not access camera. Please check permissions or use file upload instead.')
+      if (err.name === 'NotAllowedError') {
+        setError('Camera permission denied. Please allow camera access and try again.')
+      } else if (err.name === 'NotFoundError') {
+        setError('No camera found. Please use file upload instead.')
+      } else {
+        setError('Could not access camera. Please check permissions or use file upload instead.')
+      }
     }
   }, [])
 
@@ -41,31 +61,63 @@ export default function CameraCapture({ onPhotoCapture, onClose }: CameraCapture
     }
   }, [])
 
-  const capturePhoto = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current) return
+  const capturePhoto = useCallback(async () => {
+    if (!videoRef.current || !canvasRef.current) {
+      console.error('Video or canvas ref not available')
+      return
+    }
 
-    const video = videoRef.current
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')
+    setIsCapturing(true)
+    setError(null)
 
-    if (!ctx) return
+    try {
+      const video = videoRef.current
+      const canvas = canvasRef.current
+      const ctx = canvas.getContext('2d')
 
-    // Set canvas dimensions to match video
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
+      if (!ctx) {
+        console.error('Could not get canvas context')
+        setError('Failed to initialize capture. Please try again.')
+        return
+      }
 
-    // Draw current video frame to canvas
-    ctx.drawImage(video, 0, 0)
+      // Ensure video is ready and has dimensions
+      if (video.videoWidth === 0 || video.videoHeight === 0) {
+        console.error('Video dimensions not available')
+        setError('Video not ready. Please wait a moment and try again.')
+        return
+      }
 
-    // Convert canvas to blob and create file
-    canvas.toBlob((blob) => {
+      console.log('Capturing photo with dimensions:', video.videoWidth, 'x', video.videoHeight)
+
+      // Set canvas dimensions to match video
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+
+      // Draw current video frame to canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+      // Convert canvas to blob and create file
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob(resolve, 'image/jpeg', 0.9)
+      })
+
       if (blob) {
-        const file = new File([blob], 'palm-photo.jpg', { type: 'image/jpeg' })
+        console.log('Photo captured successfully, size:', blob.size, 'bytes')
+        const file = new File([blob], `palm-photo-${Date.now()}.jpg`, { type: 'image/jpeg' })
         onPhotoCapture(file)
         stopCamera()
         onClose()
+      } else {
+        console.error('Failed to create blob from canvas')
+        setError('Failed to capture photo. Please try again.')
       }
-    }, 'image/jpeg', 0.8)
+    } catch (error) {
+      console.error('Capture error:', error)
+      setError('Failed to capture photo. Please try again.')
+    } finally {
+      setIsCapturing(false)
+    }
   }, [onPhotoCapture, onClose, stopCamera])
 
   const handleClose = () => {
@@ -112,11 +164,15 @@ export default function CameraCapture({ onPhotoCapture, onClose }: CameraCapture
                 </div>
               </div>
               <div className="camera-controls">
-                <button onClick={handleClose} className="cancel-button">
+                <button onClick={handleClose} className="cancel-button" disabled={isCapturing}>
                   Cancel
                 </button>
-                <button onClick={capturePhoto} className="capture-button">
-                  📸 Capture
+                <button 
+                  onClick={capturePhoto} 
+                  className="capture-button"
+                  disabled={isCapturing}
+                >
+                  {isCapturing ? '⏳ Capturing...' : '📸 Capture'}
                 </button>
               </div>
             </div>

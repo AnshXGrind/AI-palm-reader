@@ -13,12 +13,16 @@ export default function PalmUploader({ onAnalysisComplete, onLoading }: PalmUplo
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const processFile = async (file: File) => {
+    console.log('Processing file:', file.name, 'Size:', file.size, 'Type:', file.type)
+    
     if (!file.type.startsWith('image/')) {
       onAnalysisComplete({ error: 'Please select an image file' })
       return
     }
 
-    setPreview(URL.createObjectURL(file))
+    const previewUrl = URL.createObjectURL(file)
+    console.log('Created preview URL:', previewUrl)
+    setPreview(previewUrl)
     
     const formData = new FormData()
     formData.append('file', file)
@@ -114,12 +118,13 @@ export default function PalmUploader({ onAnalysisComplete, onLoading }: PalmUplo
 
       {preview && (
         <div className="preview-container">
-          <h4>Preview</h4>
+          <h4>✅ Photo Captured Successfully!</h4>
           <img 
             src={preview} 
             alt="Palm preview" 
-            className="preview-image small"
+            className="preview-image"
           />
+          <p className="preview-note">Analysis will begin automatically...</p>
         </div>
       )}
 
