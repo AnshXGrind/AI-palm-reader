@@ -25,16 +25,26 @@ export default function PalmUploader({ onAnalysisComplete, onLoading }: PalmUplo
 
     onLoading(true)
     try {
-      const response = await fetch('http://localhost:8000/analyze', {
+      // Use local API route for Vercel deployment, fallback to backend for development
+      const apiUrl = process.env.NODE_ENV === 'production' 
+        ? '/api/analyze' 
+        : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/analyze')
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         body: formData,
       })
+      
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`)
+      }
+      
       const result = await response.json()
       onAnalysisComplete(result)
     } catch (error) {
       console.error('Analysis failed:', error)
       onAnalysisComplete({ 
-        error: 'Could not reach the AI analysis server. Please ensure the backend is running at http://localhost:8000' 
+        error: `Could not analyze the palm image. ${error instanceof Error ? error.message : 'Please try again.'}` 
       })
     } finally {
       onLoading(false)

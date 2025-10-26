@@ -142,6 +142,30 @@ This is a prototype project. Future improvements could include:
 3. **UI/UX Enhancements**: Add animations and better mobile experience
 4. **Backend Improvements**: Add caching, rate limiting, user management
 
-## 📝 License
+## 🚀 Deployment
+
+### ⚡ Quick Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/AnshXGrind/AI-palm-reader)
+
+**Or deploy manually:**
+
+```bash
+# Windows
+deploy-vercel.bat
+
+# Mac/Linux  
+./deploy-vercel.sh
+```
+
+**Features in Vercel deployment:**
+- ✅ Full palm reading functionality with mock AI analysis
+- ✅ Beautiful UI with camera capture
+- ✅ Serverless API routes (no backend needed)
+- ✅ Optimized for production performance
+
+For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
+## �📝 License
 
 This project is for educational and demonstration purposes. Feel free to fork and modify!
