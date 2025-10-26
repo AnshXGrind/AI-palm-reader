@@ -1,7 +1,23 @@
 interface AnalysisResult {
-  lines?: Array<{coords: number[], length: number}>
+  lines?: Array<{coords: number[], length: number, type?: string, strength?: number}>
   interpretation?: string
   overlay?: string
+  predictions?: {
+    nextYear: string[]
+    next5Years: string[]
+    longTerm: string[]
+  }
+  personality?: {
+    primaryTraits: string[]
+    strengths: string[]
+    challenges: string[]
+    idealCareer: string
+  }
+  compatibility?: {
+    bestMatches: string[]
+    goodMatches: string[]
+    challenges: string[]
+  }
   error?: string
 }
 
@@ -64,8 +80,98 @@ export default function ResultDisplay({ result, loading }: ResultDisplayProps) {
 
       {result.interpretation && (
         <div className="interpretation">
-          <h3>✨ Your Personal Reading</h3>
-          {result.interpretation}
+          <h3>🔮 Your Complete Palm Reading</h3>
+          <div className="reading-content">
+            {result.interpretation.split('\n').map((line, index) => (
+              <p key={index} className={line.startsWith('**') ? 'reading-section' : 'reading-text'}>
+                {line}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {result.predictions && (
+        <div className="predictions-section">
+          <h3>🔮 Future Predictions</h3>
+          <div className="predictions-grid">
+            <div className="prediction-card">
+              <h4>📅 Next Year</h4>
+              <ul>
+                {result.predictions.nextYear.map((prediction, index) => (
+                  <li key={index}>{prediction}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="prediction-card">
+              <h4>🎯 Next 5 Years</h4>
+              <ul>
+                {result.predictions.next5Years.map((prediction, index) => (
+                  <li key={index}>{prediction}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="prediction-card">
+              <h4>🌟 Long Term</h4>
+              <ul>
+                {result.predictions.longTerm.map((prediction, index) => (
+                  <li key={index}>{prediction}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {result.personality && (
+        <div className="personality-section">
+          <h3>🎭 Personality Analysis</h3>
+          <div className="personality-grid">
+            <div className="personality-card">
+              <h4>✨ Your Traits</h4>
+              <ul>
+                {result.personality.primaryTraits.map((trait, index) => (
+                  <li key={index}>{trait}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="personality-card">
+              <h4>💪 Strengths</h4>
+              <ul>
+                {result.personality.strengths.map((strength, index) => (
+                  <li key={index}>{strength}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="personality-card">
+              <h4>🎯 Ideal Career</h4>
+              <p>{result.personality.idealCareer}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {result.compatibility && (
+        <div className="compatibility-section">
+          <h3>💕 Love Compatibility</h3>
+          <div className="compatibility-grid">
+            <div className="compatibility-card best">
+              <h4>💖 Best Matches</h4>
+              <ul>
+                {result.compatibility.bestMatches.map((match, index) => (
+                  <li key={index}>{match}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="compatibility-card good">
+              <h4>💚 Good Matches</h4>
+              <ul>
+                {result.compatibility.goodMatches.map((match, index) => (
+                  <li key={index}>{match}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
       )}
     </div>
