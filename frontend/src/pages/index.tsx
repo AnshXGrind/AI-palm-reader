@@ -33,13 +33,13 @@ export default function Home() {
       {/* Features Section */}
       <div className="features">
         <div className="feature-card">
-          <div className="feature-icon">�</div>
+          <div className="feature-icon">🤖</div>
           <h3>Advanced AI Analysis</h3>
           <p>State-of-the-art computer vision and machine learning algorithms analyze palm patterns with scientific precision</p>
         </div>
         
         <div className="feature-card">
-          <div className="feature-icon">�</div>
+          <div className="feature-icon">🔮</div>
           <h3>Complete Future Insights</h3>
           <p>Get comprehensive predictions for love, career, health, and financial success based on ancient palmistry wisdom</p>
         </div>

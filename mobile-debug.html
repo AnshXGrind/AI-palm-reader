@@ -1,0 +1,232 @@
+<!-- Mobile Debug Test Page -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Debug - Palm Reader Features</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a0a;
+            color: #e2e8f0;
+            padding: 1rem;
+            line-height: 1.6;
+        }
+
+        .debug-info {
+            background: #1a1a2e;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+
+        .debug-info h2 {
+            color: #3b82f6;
+            margin-bottom: 1rem;
+        }
+
+        .debug-info p {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem 0;
+        }
+
+        .hero h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Ultra-robust mobile features display */
+        .features {
+            display: block;
+            width: 100%;
+            margin: 2rem 0;
+            padding: 0 0.5rem;
+        }
+
+        .feature-card {
+            background: rgba(15, 23, 42, 0.9);
+            border: 2px solid #3b82f6;
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 1.5rem;
+            display: block;
+            position: static;
+            visibility: visible;
+            opacity: 1;
+            min-height: 180px;
+            box-sizing: border-box;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature-card h3 {
+            color: #f1f5f9;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card p {
+            color: #94a3b8;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .test-section {
+            margin: 2rem 0;
+            padding: 1rem;
+            background: #1a1a2e;
+            border-radius: 10px;
+        }
+
+        .test-section h3 {
+            color: #10b981;
+            margin-bottom: 1rem;
+        }
+
+        /* Progressive enhancement for larger screens */
+        @media (min-width: 640px) {
+            .features {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 2rem;
+                padding: 0;
+            }
+
+            .feature-card {
+                margin-bottom: 0;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .features {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="debug-info">
+            <h2>🔍 Mobile Debug Information</h2>
+            <p id="screen-width">Screen Width: Loading...</p>
+            <p id="viewport-width">Viewport Width: Loading...</p>
+            <p id="device-type">Device Type: Loading...</p>
+            <p id="user-agent">User Agent: Loading...</p>
+        </div>
+
+        <div class="hero">
+            <h1>🔮 AI Palm Reader</h1>
+            <p>Testing mobile display of all four feature cards</p>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ Features Section Test</h3>
+            <p>All four cards should be visible below on mobile devices:</p>
+        </div>
+
+        <!-- Features Section -->
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>Advanced AI Analysis</h3>
+                <p>State-of-the-art computer vision and machine learning algorithms analyze palm patterns with scientific precision</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🔮</div>
+                <h3>Complete Future Insights</h3>
+                <p>Get comprehensive predictions for love, career, health, and financial success based on ancient palmistry wisdom</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3>Smart Photo Capture</h3>
+                <p>Intelligent camera system with guided positioning and real-time quality optimization for perfect palm scans</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Lightning Fast Results</h3>
+                <p>Advanced processing delivers detailed personality analysis and future predictions in seconds</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Card Count Test</h3>
+            <p id="card-count">Visible Cards: Loading...</p>
+            <p id="grid-info">Grid Info: Loading...</p>
+        </div>
+    </div>
+
+    <script>
+        // Debug information
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update debug info
+            document.getElementById('screen-width').textContent = `Screen Width: ${screen.width}px`;
+            document.getElementById('viewport-width').textContent = `Viewport Width: ${window.innerWidth}px`;
+            document.getElementById('device-type').textContent = `Device Type: ${/Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'}`;
+            document.getElementById('user-agent').textContent = `User Agent: ${navigator.userAgent}`;
+
+            // Count visible cards
+            const cards = document.querySelectorAll('.feature-card');
+            let visibleCards = 0;
+            cards.forEach(card => {
+                const style = window.getComputedStyle(card);
+                if (style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0') {
+                    visibleCards++;
+                }
+            });
+            
+            document.getElementById('card-count').textContent = `Visible Cards: ${visibleCards}/4`;
+
+            // Grid information
+            const featuresContainer = document.querySelector('.features');
+            const featuresStyle = window.getComputedStyle(featuresContainer);
+            document.getElementById('grid-info').textContent = `Display: ${featuresStyle.display}, Grid Columns: ${featuresStyle.gridTemplateColumns}`;
+
+            // Resize handler
+            window.addEventListener('resize', function() {
+                document.getElementById('viewport-width').textContent = `Viewport Width: ${window.innerWidth}px`;
+            });
+        });
+    </script>
+</body>
+</html>

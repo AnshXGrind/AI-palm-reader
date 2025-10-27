@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Test - Features Section</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a0a;
+            color: #e2e8f0;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem 0;
+        }
+
+        .hero h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Features Section - Mobile First */
+        .features {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0;
+            padding: 0 0.5rem;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .feature-card {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 200px;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+            opacity: 0.9;
+        }
+
+        .feature-card h3 {
+            color: #f1f5f9;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .feature-card p {
+            color: #94a3b8;
+            line-height: 1.6;
+            text-align: center;
+            flex-grow: 1;
+            font-size: 0.95rem;
+        }
+
+        /* Tablet view - 2 columns */
+        @media (min-width: 640px) {
+            .features {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 2rem;
+                margin: 3rem 0;
+                padding: 0;
+            }
+
+            .feature-card {
+                padding: 2rem;
+                border-radius: 20px;
+            }
+
+            .feature-card h3 {
+                font-size: 1.4rem;
+                margin-bottom: 1rem;
+            }
+
+            .feature-card p {
+                font-size: 1rem;
+            }
+        }
+
+        /* Desktop view - 4 columns */
+        @media (min-width: 1024px) {
+            .features {
+                grid-template-columns: repeat(4, 1fr);
+                margin: 4rem 0;
+            }
+        }
+
+        /* Mobile-Specific Optimizations */
+        @media (max-width: 767px) {
+            .features {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                gap: 1.5rem !important;
+                margin: 2rem 0 !important;
+                padding: 0 0.5rem !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            .feature-card {
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin-bottom: 1rem !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: relative !important;
+                background: rgba(15, 23, 42, 0.9) !important;
+                min-height: 180px !important;
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            .features {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                gap: 1.25rem !important;
+                margin: 1.5rem 0 !important;
+                padding: 0 0.25rem !important;
+            }
+
+            .feature-card {
+                padding: 1.25rem !important;
+                margin-bottom: 0.5rem !important;
+                min-height: 160px !important;
+                border-radius: 12px !important;
+            }
+
+            .feature-card h3 {
+                font-size: 1.1rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+
+            .feature-card p {
+                font-size: 0.9rem !important;
+                line-height: 1.4 !important;
+            }
+
+            .feature-icon {
+                font-size: 2rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>🔮 AI Palm Reader</h1>
+            <p>Discover your destiny through the ancient art of palmistry, powered by cutting-edge AI technology.</p>
+        </div>
+
+        <!-- Features Section -->
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>Advanced AI Analysis</h3>
+                <p>State-of-the-art computer vision and machine learning algorithms analyze palm patterns with scientific precision</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🔮</div>
+                <h3>Complete Future Insights</h3>
+                <p>Get comprehensive predictions for love, career, health, and financial success based on ancient palmistry wisdom</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3>Smart Photo Capture</h3>
+                <p>Intelligent camera system with guided positioning and real-time quality optimization for perfect palm scans</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Lightning Fast Results</h3>
+                <p>Advanced processing delivers detailed personality analysis and future predictions in seconds</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

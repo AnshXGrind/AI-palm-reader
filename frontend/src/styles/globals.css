@@ -492,22 +492,29 @@ body {
   border: 1px solid #fed7d7;
 }
 
-/* Features Section */
+/* Features Section - Mobile First */
 .features {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.5rem;
   margin: 2rem 0;
+  padding: 0 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
+/* Tablet view - 2 columns */
 @media (min-width: 640px) {
   .features {
     grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
     margin: 3rem 0;
+    padding: 0;
   }
 }
 
+/* Desktop view - 4 columns */
 @media (min-width: 1024px) {
   .features {
     grid-template-columns: repeat(4, 1fr);
@@ -526,6 +533,14 @@ body {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 200px;
 }
 
 @media (min-width: 640px) {
@@ -579,6 +594,9 @@ body {
   color: #f1f5f9;
   font-size: 1.25rem;
   font-weight: 600;
+  margin-bottom: 0.75rem;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 @media (min-width: 640px) {
@@ -591,6 +609,15 @@ body {
 .feature-card p {
   color: #94a3b8;
   line-height: 1.6;
+  text-align: center;
+  flex-grow: 1;
+  font-size: 0.95rem;
+}
+
+@media (min-width: 640px) {
+  .feature-card p {
+    font-size: 1rem;
+  }
 }
 
 /* Camera Overlay */
@@ -1203,6 +1230,7 @@ body {
   }
 }
 
+/* Extra small screens - ensure all 4 feature cards show */
 @media (max-width: 480px) {
   .hero h1 {
     font-size: 2rem;
@@ -1214,6 +1242,37 @@ body {
   
   .upload-content h3 {
     font-size: 1.4rem;
+  }
+  
+  /* Force display of all feature cards on very small screens */
+  .features {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+    margin: 1.5rem 0 !important;
+    padding: 0 0.25rem !important;
+  }
+  
+  .feature-card {
+    padding: 1.25rem !important;
+    margin-bottom: 0.5rem !important;
+    min-height: 160px !important;
+    border-radius: 12px !important;
+  }
+  
+  .feature-card h3 {
+    font-size: 1.1rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .feature-card p {
+    font-size: 0.9rem !important;
+    line-height: 1.4 !important;
+  }
+  
+  .feature-icon {
+    font-size: 2rem !important;
+    margin-bottom: 0.5rem !important;
   }
   
   .predictions-section,
@@ -1260,6 +1319,30 @@ body {
     font-size: 1rem;
     line-height: 1.6;
     padding: 0 0.5rem;
+  }
+  
+  /* Ensure all 4 feature cards are visible on mobile */
+  .features {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+    margin: 2rem 0 !important;
+    padding: 0 0.5rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  .feature-card {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 1rem !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    min-height: 180px !important;
   }
   
   /* Ensure readable font sizes */
@@ -1317,5 +1400,76 @@ body {
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   .feature-card, .upload-area, .camera-modal {
     border-width: 0.5px;
+  }
+}
+
+/* Debug: Force all feature cards to be visible on mobile */
+@media (max-width: 640px) {
+  .features {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: repeat(4, auto) !important;
+    gap: 1.5rem !important;
+    width: 100% !important;
+    margin: 2rem auto !important;
+    padding: 0 1rem !important;
+    box-sizing: border-box !important;
+  }
+  
+  .feature-card:nth-child(1),
+  .feature-card:nth-child(2),
+  .feature-card:nth-child(3),
+  .feature-card:nth-child(4) {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: static !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 180px !important;
+    margin: 0 0 1rem 0 !important;
+    grid-column: 1 !important;
+  }
+}
+
+/* Ultra-safe mobile display rules */
+@media screen and (max-width: 479px) {
+  .features {
+    display: block !important;
+    width: 100% !important;
+    padding: 0 0.5rem !important;
+  }
+  
+  .feature-card {
+    display: block !important;
+    width: 100% !important;
+    margin-bottom: 1.5rem !important;
+    float: none !important;
+    position: static !important;
+    clear: both !important;
+  }
+}
+
+/* Emergency fallback - ensure all cards are always visible */
+.feature-card:nth-child(1),
+.feature-card:nth-child(2),
+.feature-card:nth-child(3),
+.feature-card:nth-child(4) {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Mobile viewport height fix */
+@media screen and (max-height: 600px) and (orientation: portrait) {
+  .features {
+    margin: 1rem 0 !important;
+  }
+  
+  .feature-card {
+    min-height: 150px !important;
+    padding: 1rem !important;
   }
 }
