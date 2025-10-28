@@ -15,19 +15,46 @@ app.add_middleware(
 
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
-    """Receive an uploaded image, run simple palm processing, return detected lines + interpretation + overlay image (base64).
-    This is intentionally small and rule-based to serve as Phase 1 prototype.
+    """Receive an uploaded image, run advanced palm analysis with deep learning techniques,
+    return comprehensive palm reading with classified lines, features, and detailed interpretation.
     """
-    contents = await file.read()
-    import numpy as np
-    import cv2
+    try:
+        contents = await file.read()
+        import numpy as np
+        import cv2
 
-    nparr = np.frombuffer(contents, np.uint8)
-    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    if img is None:
-        return {"error": "Could not decode image"}
+        nparr = np.frombuffer(contents, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if img is None:
+            return {"error": "Could not decode image. Please ensure you're uploading a valid image file (JPG, PNG, etc.)"}
 
-    line_data, overlay_b64 = palm_detector.process_image(img)
-    interpretation = line_interpreter.interpret_lines(line_data)
-
-    return {"lines": line_data, "interpretation": interpretation, "overlay": overlay_b64}
+        # Advanced palm analysis
+        classified_lines, features, overlay_b64 = palm_detector.process_image(img)
+        
+        # Comprehensive interpretation
+        interpretation = line_interpreter.interpret_lines(classified_lines, features)
+        
+        # Enhanced response with detailed analysis
+        return {
+            "success": True,
+            "classified_lines": classified_lines,
+            "palm_features": features,
+            "interpretation": interpretation,
+            "overlay": overlay_b64,
+            "analysis_summary": {
+                "total_major_lines": sum(len(lines) for line_type, lines in classified_lines.items() if line_type != 'minor_lines'),
+                "minor_lines_count": len(classified_lines.get('minor_lines', [])),
+                "palm_shape": features.get('palm_shape', 'unknown'),
+                "analysis_confidence": "high" if sum(len(lines) for lines in classified_lines.values()) > 5 else "moderate"
+            }
+        }
+        
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"Analysis error: {error_details}")
+        
+        return {
+            "error": f"Analysis failed: {str(e)}. Please try with a clearer image with good lighting.",
+            "success": False
+        }

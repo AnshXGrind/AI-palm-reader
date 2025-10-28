@@ -627,31 +627,35 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.95);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10000;
   animation: fadeIn 0.3s ease;
+  padding: 1rem;
+  box-sizing: border-box;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .camera-modal {
-  background: rgba(15, 23, 42, 0.95);
-  border-radius: 15px;
+  background: rgba(15, 23, 42, 0.98);
+  border-radius: 20px;
   padding: 1rem;
   max-width: 95vw;
   max-height: 95vh;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(59, 130, 246, 0.5);
+  box-shadow: 0 25px 50px rgba(59, 130, 246, 0.3);
   width: 100%;
   margin: 0 auto;
+  overflow: hidden;
+  position: relative;
 }
 
 @media (min-width: 640px) {
@@ -756,29 +760,37 @@ body {
 .camera-icon {
   font-size: 4rem;
   margin-bottom: 1rem;
+  opacity: 0.9;
 }
 
 .camera-start h4 {
   margin-bottom: 0.5rem;
-  color: #374151;
+  color: #f1f5f9;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
 .camera-start p {
-  color: #6b7280;
+  color: #94a3b8;
   margin-bottom: 2rem;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 .start-camera-button {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
   color: white;
   border: none;
-  padding: 1rem 2rem;
+  padding: 1.2rem 2.5rem;
   border-radius: 50px;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  min-width: 200px;
+  position: relative;
+  overflow: hidden;
 }
 
 .start-camera-button:hover:not(:disabled) {
@@ -942,16 +954,19 @@ body {
 }
 
 .capture-button {
-  background: linear-gradient(45deg, #10b981, #059669);
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
+  padding: 1rem 2rem;
+  border-radius: 50px;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: 700;
+  font-size: 1.1rem;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+  min-width: 150px;
+  position: relative;
+  overflow: hidden;
 }
 
 .capture-button:hover:not(:disabled) {
@@ -1037,16 +1052,110 @@ body {
   line-height: 1.8;
 }
 
+.section-header {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #3b82f6;
+  margin: 2rem 0 1rem 0;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+}
+
 .reading-section {
   font-weight: 600;
-  color: #667eea;
+  color: #8b5cf6;
   margin: 1.5rem 0 0.5rem 0;
   font-size: 1.1rem;
 }
 
 .reading-text {
   margin: 0.5rem 0;
-  color: #2d3748;
+  color: #e2e8f0;
+  line-height: 1.6;
+}
+
+.reading-point {
+  margin: 0.5rem 0;
+  color: #10b981;
+  padding-left: 1rem;
+  font-weight: 500;
+}
+
+/* New Analysis Components */
+.analysis-info {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 10px;
+  border-left: 4px solid #3b82f6;
+}
+
+.analysis-info p {
+  margin: 0.5rem 0;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+}
+
+.line-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.line-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+}
+
+.line-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.line-color.heart { background: #ef4444; }
+.line-color.head { background: #10b981; }
+.line-color.life { background: #3b82f6; }
+.line-color.fate { background: #8b5cf6; }
+.line-color.minor { background: #6b7280; }
+
+.palm-features {
+  margin-top: 1rem;
+}
+
+.palm-features summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #3b82f6;
+  padding: 0.5rem;
+  border-radius: 5px;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.palm-features summary:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 8px;
+}
+
+.features-grid p {
+  margin: 0.25rem 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
 }
 
 .predictions-section {
