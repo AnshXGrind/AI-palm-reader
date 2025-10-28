@@ -735,21 +735,122 @@ body {
 .camera-error {
   text-align: center;
   padding: 2rem;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 15px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  margin: 1rem;
 }
 
-.camera-error p {
-  color: #dc2626;
+.camera-error .error-icon {
+  font-size: 3rem;
   margin-bottom: 1rem;
 }
 
-.error-button {
-  background: #dc2626;
+.camera-error h4 {
+  color: #ef4444;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.camera-error p {
+  color: #ef4444;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.error-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.retry-button {
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 10px;
+  border-radius: 25px;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.retry-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.error-button {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+}
+
+.error-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+}
+
+.emergency-button {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.emergency-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+.timeout-warning {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.timeout-warning p {
+  color: #f59e0b;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.fallback-upload-button {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.fallback-upload-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
 
 .camera-start {
@@ -775,6 +876,21 @@ body {
   margin-bottom: 2rem;
   font-size: 1rem;
   line-height: 1.6;
+}
+
+.debug-status {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin: 1rem 0;
+  font-family: monospace;
+}
+
+.debug-status small {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  line-height: 1.4;
 }
 
 .start-camera-button {
@@ -853,8 +969,18 @@ body {
   object-fit: cover;
 }
 
+.camera-video.enhanced {
+  min-height: 300px;
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  background: #000;
+}
+
 .capture-canvas {
   display: none;
+}
+
+.capture-canvas.hidden {
+  display: none !important;
 }
 
 @media (min-width: 480px) {
