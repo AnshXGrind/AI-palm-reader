@@ -13,6 +13,12 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+async def root():
+    """Health check endpoint"""
+    return {"status": "ok", "message": "AI Palm Reader Backend is running"}
+
+
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
     """Receive an uploaded image, run advanced palm analysis with deep learning techniques,
