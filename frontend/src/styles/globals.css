@@ -269,6 +269,19 @@ body {
   }
 }
 
+.supported-formats {
+  margin: 1rem 0;
+  padding: 0.5rem 1rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 8px;
+}
+
+.supported-formats small {
+  color: #10b981;
+  font-weight: 500;
+}
+
 .upload-buttons {
   display: flex;
   gap: 0.75rem;

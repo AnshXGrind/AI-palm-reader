@@ -10,11 +10,21 @@ type HeicConverter = (options: {
 
 // Dynamic import for HEIC support (client-side only)
 let heic2any: HeicConverter | null = null;
-if (typeof window !== 'undefined') {
+
+// Load heic2any dynamically
+const loadHeicConverter = async (): Promise<HeicConverter | null> => {
+  if (typeof window === 'undefined') return null;
+  
   try {
-    heic2any = require('heic2any');
+    if (!heic2any) {
+      // Use dynamic import for better compatibility
+      const heicModule = await import('heic2any');
+      heic2any = heicModule.default || heicModule;
+    }
+    return heic2any;
   } catch (error) {
     console.warn('HEIC conversion not available:', error);
+    return null;
   }
 }
 
@@ -32,51 +42,79 @@ export default function PalmUploader({ onAnalysisComplete, onLoading }: PalmUplo
   const processFile = async (file: File) => {
     console.log('Processing file:', file.name, 'Size:', file.size, 'Type:', file.type)
     
-    // Check if it's an image file or HEIC
-    const isHeic = file.name.toLowerCase().endsWith('.heic') || file.type === 'image/heic'
-    const isRegularImage = file.type.startsWith('image/')
+    // Enhanced file type detection
+    const fileName = file.name.toLowerCase()
+    const isHeic = fileName.endsWith('.heic') || fileName.endsWith('.heif') || file.type === 'image/heic' || file.type === 'image/heif'
+    const isRegularImage = file.type.startsWith('image/') && !isHeic
+    const isImageByExtension = /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(fileName)
     
-    if (!isRegularImage && !isHeic) {
-      onAnalysisComplete({ error: 'Please select an image file (JPG, PNG, HEIC, etc.)' })
+    if (!isRegularImage && !isHeic && !isImageByExtension) {
+      onAnalysisComplete({ error: 'Please select a valid image file (JPG, PNG, HEIC, etc.)' })
       return
     }
 
     let processedFile = file
-    let previewUrl = URL.createObjectURL(file)
+    let previewUrl: string
 
     // Convert HEIC to JPEG if needed
-    if (isHeic && heic2any) {
+    if (isHeic) {
       try {
-        console.log('Converting HEIC file...')
+        console.log('HEIC file detected, attempting conversion...')
         onLoading(true)
         
-        const convertedBlob = await heic2any({
+        // Load heic2any dynamically
+        const converter = await loadHeicConverter()
+        
+        if (!converter) {
+          throw new Error('HEIC converter not available')
+        }
+        
+        console.log('Converting HEIC file...')
+        const convertedBlob = await converter({
           blob: file,
           toType: 'image/jpeg',
           quality: 0.9
-        }) as Blob
+        })
         
-        processedFile = new File([convertedBlob], file.name.replace(/\.heic$/i, '.jpg'), {
+        // Handle both single blob and array return types
+        const finalBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
+        
+        processedFile = new File([finalBlob], file.name.replace(/\.heic?$/i, '.jpg'), {
           type: 'image/jpeg'
         })
         
-        // Create new preview URL for converted file
-        URL.revokeObjectURL(previewUrl)
         previewUrl = URL.createObjectURL(processedFile)
         
-        console.log('HEIC converted successfully, new size:', processedFile.size, 'bytes')
+        console.log('✅ HEIC converted successfully:', {
+          originalSize: file.size,
+          convertedSize: processedFile.size,
+          originalType: file.type,
+          convertedType: processedFile.type
+        })
+        
         onLoading(false)
       } catch (error) {
-        console.error('HEIC conversion failed:', error)
+        console.error('❌ HEIC conversion failed:', error)
         onLoading(false)
-        onAnalysisComplete({ error: 'Failed to convert HEIC file. Please try a different format.' })
+        onAnalysisComplete({ 
+          error: `Failed to convert HEIC file: ${error instanceof Error ? error.message : 'Unknown error'}. Please try converting to JPG first or use a different image.` 
+        })
         return
       }
+    } else {
+      // Regular image file
+      previewUrl = URL.createObjectURL(file)
     }
 
     console.log('Created preview URL:', previewUrl)
     setPreview(previewUrl)
     
+    console.log('Sending file for analysis:', {
+      name: processedFile.name,
+      size: processedFile.size,
+      type: processedFile.type
+    })
+
     const formData = new FormData()
     formData.append('file', processedFile)
 
@@ -87,21 +125,33 @@ export default function PalmUploader({ onAnalysisComplete, onLoading }: PalmUplo
         ? '/api/analyze' 
         : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/analyze')
       
+      console.log('Sending request to:', apiUrl)
+      
       const response = await fetch(apiUrl, {
         method: 'POST',
         body: formData,
       })
       
+      console.log('Response status:', response.status)
+      
       if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`)
+        const errorText = await response.text()
+        console.error('Server response error:', errorText)
+        throw new Error(`Server error: ${response.status} - ${errorText}`)
       }
       
       const result = await response.json()
-      onAnalysisComplete(result)
+      console.log('Analysis result:', result)
+      
+      if (result.error) {
+        onAnalysisComplete({ error: result.error })
+      } else {
+        onAnalysisComplete(result)
+      }
     } catch (error) {
-      console.error('Analysis failed:', error)
+      console.error('❌ Analysis failed:', error)
       onAnalysisComplete({ 
-        error: `Could not analyze the palm image. ${error instanceof Error ? error.message : 'Please try again.'}` 
+        error: `Analysis failed: ${error instanceof Error ? error.message : 'Network error'}. Please check your connection and try again.` 
       })
     } finally {
       onLoading(false)
@@ -141,7 +191,7 @@ export default function PalmUploader({ onAnalysisComplete, onLoading }: PalmUplo
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*,.heic,.HEIC"
+          accept="image/*,.heic,.HEIC,.heif,.HEIF"
           onChange={handleFileSelect}
           className="upload-input"
           aria-label="Upload palm image"
@@ -150,7 +200,10 @@ export default function PalmUploader({ onAnalysisComplete, onLoading }: PalmUplo
         <div className="upload-content">
           <div className="upload-icon">🤲</div>
           <h3>Upload Your Palm Photo</h3>
-          <p>Drag & drop an image here (JPG, PNG, HEIC supported), or choose an option below</p>
+          <p>Drag & drop an image here, or choose an option below</p>
+          <div className="supported-formats">
+            <small>✅ Supported: JPG, PNG, HEIC, HEIF, WebP, BMP</small>
+          </div>
           <div className="upload-buttons">
             <button type="button" className="upload-button">
               📁 Choose File

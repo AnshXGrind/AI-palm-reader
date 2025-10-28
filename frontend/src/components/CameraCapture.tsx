@@ -308,15 +308,42 @@ export default function CameraCapture({ onPhotoCapture, onClose }: CameraCapture
       const video = videoRef.current
       const canvas = canvasRef.current
       
-      // Check if video is ready
-      if (video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) {
-        setError('Camera not ready. Please wait for the camera to load completely.')
+      // Enhanced video readiness check
+      console.log('Video state:', {
+        readyState: video.readyState,
+        videoWidth: video.videoWidth,
+        videoHeight: video.videoHeight,
+        srcObject: !!video.srcObject
+      })
+      
+      // Wait for video to be fully ready
+      if (video.readyState < 2) {
+        console.log('Waiting for video to be ready...')
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error('Video readiness timeout')), 5000)
+          
+          const checkReady = () => {
+            if (video.readyState >= 2 && video.videoWidth > 0) {
+              clearTimeout(timeout)
+              resolve(true)
+            } else {
+              setTimeout(checkReady, 100)
+            }
+          }
+          checkReady()
+        })
+      }
+      
+      if (video.videoWidth === 0 || video.videoHeight === 0) {
+        setError('Camera feed not available. Please ensure camera is working and try again.')
         return
       }
 
       // Set canvas dimensions to match video
-      canvas.width = video.videoWidth
-      canvas.height = video.videoHeight
+      const width = video.videoWidth
+      const height = video.videoHeight
+      canvas.width = width
+      canvas.height = height
 
       const ctx = canvas.getContext('2d')
       if (!ctx) {
@@ -324,8 +351,11 @@ export default function CameraCapture({ onPhotoCapture, onClose }: CameraCapture
         return
       }
 
+      // Clear canvas first
+      ctx.clearRect(0, 0, width, height)
+      
       // Draw current video frame to canvas
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+      ctx.drawImage(video, 0, 0, width, height)
 
       // Add camera flash effect
       const flashDiv = document.createElement('div')
@@ -333,34 +363,63 @@ export default function CameraCapture({ onPhotoCapture, onClose }: CameraCapture
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: 100vh;
         background: white;
         opacity: 0.8;
-        z-index: 9999;
+        z-index: 99999;
         pointer-events: none;
+        transition: opacity 0.2s;
       `
       document.body.appendChild(flashDiv)
+      
+      // Remove flash after animation
       setTimeout(() => {
-        document.body.removeChild(flashDiv)
-      }, 200)
+        flashDiv.style.opacity = '0'
+        setTimeout(() => {
+          if (document.body.contains(flashDiv)) {
+            document.body.removeChild(flashDiv)
+          }
+        }, 200)
+      }, 100)
 
-      // Convert canvas to blob
-      const blob = await new Promise<Blob | null>((resolve, reject) => {
-        canvas.toBlob(resolve, 'image/jpeg', 0.9)
-        // Add timeout
-        setTimeout(() => resolve(null), 5000)
+      // Convert canvas to blob with better error handling
+      const blob = await new Promise<Blob | null>((resolve) => {
+        try {
+          canvas.toBlob((result) => {
+            resolve(result)
+          }, 'image/jpeg', 0.95)
+          
+          // Fallback timeout
+          setTimeout(() => {
+            console.warn('Canvas toBlob timeout')
+            resolve(null)
+          }, 10000)
+        } catch (error) {
+          console.error('Canvas toBlob error:', error)
+          resolve(null)
+        }
       })
 
-      if (!blob || blob.size < 1000) {
-        setError('Photo capture failed. Please try again.')
+      if (!blob) {
+        setError('Failed to create image from camera. Please try again.')
         return
       }
 
-      console.log('✅ Photo captured successfully! Size:', blob.size, 'bytes')
+      if (blob.size < 500) {
+        setError('Captured image is too small. Please ensure camera is working properly.')
+        return
+      }
+
+      console.log('✅ Photo captured successfully!', {
+        dimensions: `${width}x${height}`,
+        size: `${(blob.size / 1024).toFixed(2)}KB`,
+        type: blob.type
+      })
       
       // Create file from blob
-      const file = new File([blob], `palm-photo-${Date.now()}.jpg`, { 
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+      const file = new File([blob], `palm-capture-${timestamp}.jpg`, { 
         type: 'image/jpeg'
       })
       
@@ -372,8 +431,8 @@ export default function CameraCapture({ onPhotoCapture, onClose }: CameraCapture
       onClose()
       
     } catch (error) {
-      console.error('Capture error:', error)
-      setError('Failed to capture photo. Please try again.')
+      console.error('❌ Capture error:', error)
+      setError(`Photo capture failed: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`)
     } finally {
       setIsCapturing(false)
     }
