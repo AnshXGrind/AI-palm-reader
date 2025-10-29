@@ -46,8 +46,8 @@ export default function Home() {
         
         <div className="feature-card">
           <div className="feature-icon">📱</div>
-          <h3>Smart Photo Capture</h3>
-          <p>Intelligent camera system with guided positioning and real-time quality optimization for perfect palm scans</p>
+          <h3>Easy File Upload</h3>
+          <p>Simple drag & drop interface with support for all image formats including HEIC files from your phone</p>
         </div>
         
         <div className="feature-card">

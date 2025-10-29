@@ -1,5 +1,4 @@
 import { useState, useRef } from 'react'
-import CameraCapture from './CameraCapture'
 
 // HEIC conversion function type
 type HeicConverter = (options: {
@@ -36,7 +35,6 @@ interface PalmUploaderProps {
 export default function PalmUploader({ onAnalysisComplete, onLoading }: PalmUploaderProps) {
   const [preview, setPreview] = useState<string | null>(null)
   const [dragOver, setDragOver] = useState(false)
-  const [showCamera, setShowCamera] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const processFile = async (file: File) => {
@@ -200,23 +198,13 @@ export default function PalmUploader({ onAnalysisComplete, onLoading }: PalmUplo
         <div className="upload-content">
           <div className="upload-icon">🤲</div>
           <h3>Upload Your Palm Photo</h3>
-          <p>Drag & drop an image here, or choose an option below</p>
+          <p>Drag & drop an image here, or click to choose a file</p>
           <div className="supported-formats">
             <small>✅ Supported: JPG, PNG, HEIC, HEIF, WebP, BMP</small>
           </div>
           <div className="upload-buttons">
             <button type="button" className="upload-button">
               📁 Choose File
-            </button>
-            <button 
-              type="button" 
-              className="camera-button"
-              onClick={(e) => {
-                e.stopPropagation()
-                setShowCamera(true)
-              }}
-            >
-              📷 Take Photo
             </button>
           </div>
         </div>
@@ -234,12 +222,7 @@ export default function PalmUploader({ onAnalysisComplete, onLoading }: PalmUplo
         </div>
       )}
 
-      {showCamera && (
-        <CameraCapture 
-          onPhotoCapture={processFile}
-          onClose={() => setShowCamera(false)}
-        />
-      )}
+
     </div>
   )
 }
