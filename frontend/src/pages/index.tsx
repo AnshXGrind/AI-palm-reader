@@ -141,34 +141,5 @@ export default function Home() {
         </div>
       </div>
     </div>
-      />
-
-      {/* Features Section */}
-      <div className="features">
-        <div className="feature-card">
-          <div className="feature-icon">🤖</div>
-          <h3>Advanced AI Analysis</h3>
-          <p>State-of-the-art computer vision and machine learning algorithms analyze palm patterns with scientific precision</p>
-        </div>
-        
-        <div className="feature-card">
-          <div className="feature-icon">🔮</div>
-          <h3>Complete Future Insights</h3>
-          <p>Get comprehensive predictions for love, career, health, and financial success based on ancient palmistry wisdom</p>
-        </div>
-        
-        <div className="feature-card">
-          <div className="feature-icon">📱</div>
-          <h3>Easy File Upload</h3>
-          <p>Simple drag & drop interface with support for all image formats including HEIC files from your phone</p>
-        </div>
-        
-        <div className="feature-card">
-          <div className="feature-icon">⚡</div>
-          <h3>Lightning Fast Results</h3>
-          <p>Advanced processing delivers detailed personality analysis and future predictions in seconds</p>
-        </div>
-      </div>
-    </div>
-  )
+  );
 }
