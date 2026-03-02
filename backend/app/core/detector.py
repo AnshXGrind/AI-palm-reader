@@ -6,12 +6,14 @@ This replaces the fake edge detection with actual ML-based hand landmark detecti
 import cv2
 import numpy as np
 import mediapipe as mp
+from mediapipe.tasks import python as mp_python
+from mediapipe.tasks.python import vision as mp_vision
 from typing import Dict, Any, Optional, List, Tuple
 import logging
 from dataclasses import dataclass
 import base64
-from io import BytesIO
-from PIL import Image
+import os
+import urllib.request
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -58,23 +60,33 @@ class PalmDetector:
         20: 'pinky_tip'
     }
     
+    # MediaPipe Tasks model
+    _MODEL_URL = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
+    _MODEL_PATH = os.path.join(os.path.dirname(__file__), "hand_landmarker.task")
+
     def __init__(self, min_detection_confidence: float = 0.5, min_tracking_confidence: float = 0.5):
         """
-        Initialize the Mediapipe hand detector.
+        Initialize the Mediapipe hand detector using the Tasks API (mediapipe 0.10+).
         
         Args:
             min_detection_confidence: Minimum confidence for hand detection
             min_tracking_confidence: Minimum confidence for landmark tracking
         """
-        self.mp_hands = mp.solutions.hands
-        self.hands = self.mp_hands.Hands(
-            static_image_mode=True,  # Better for single image processing
-            max_num_hands=1,  # We only need one hand
-            min_detection_confidence=min_detection_confidence,
-            min_tracking_confidence=min_tracking_confidence
+        if not os.path.exists(self._MODEL_PATH):
+            logger.info("Downloading hand landmarker model...")
+            urllib.request.urlretrieve(self._MODEL_URL, self._MODEL_PATH)
+            logger.info(f"Model saved to {self._MODEL_PATH}")
+
+        base_options = mp_python.BaseOptions(model_asset_path=self._MODEL_PATH)
+        options = mp_vision.HandLandmarkerOptions(
+            base_options=base_options,
+            num_hands=1,
+            min_hand_detection_confidence=min_detection_confidence,
+            min_hand_presence_confidence=0.5,
+            min_tracking_confidence=min_tracking_confidence,
         )
-        self.mp_draw = mp.solutions.drawing_utils
-        logger.info(f"PalmDetector initialized with confidence={min_detection_confidence}")
+        self.landmarker = mp_vision.HandLandmarker.create_from_options(options)
+        logger.info(f"PalmDetector initialised (Tasks API, confidence={min_detection_confidence})")
     
     def detect_from_image(self, image: np.ndarray) -> Dict[str, Any]:
         """
@@ -91,50 +103,45 @@ class PalmDetector:
             if image is None or image.size == 0:
                 return {"success": False, "error": "Invalid image"}
             
-            # Convert BGR to RGB (Mediapipe expects RGB)
+            # Convert BGR to RGB
             image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            
-            # Process with Mediapipe
-            results = self.hands.process(image_rgb)
-            
-            # Check if hand detected
-            if not results.multi_hand_landmarks:
+
+            # Wrap in MediaPipe Image
+            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_rgb)
+
+            # Run detection
+            result = self.landmarker.detect(mp_image)
+
+            if not result.hand_landmarks:
                 logger.warning("No hand detected in image")
                 return {
                     "success": False,
                     "error": "No hand found. Please ensure your palm is clearly visible."
                 }
-            
-            # Get the first hand
-            hand_landmarks = results.multi_hand_landmarks[0]
-            
-            # Get handedness (left/right)
+
+            hand_landmarks = result.hand_landmarks[0]   # list of NormalizedLandmark
+
             handedness = "Unknown"
-            if results.multi_handedness:
-                handedness = results.multi_handedness[0].classification[0].label
-            
-            # Extract landmarks as dictionaries
+            if result.handedness:
+                handedness = result.handedness[0][0].display_name  # "Left" / "Right"
+
             landmarks = self._extract_landmarks(hand_landmarks, image.shape)
-            
-            # Calculate palm features
             features = self._calculate_palm_features(landmarks)
-            
-            # Generate overlay image with landmarks drawn
             overlay = self._draw_landmarks(image, hand_landmarks)
-            
-            # Convert overlay to base64 for web display
+
             _, buffer = cv2.imencode('.png', overlay)
             overlay_base64 = base64.b64encode(buffer).decode('utf-8')
-            
-            logger.info(f"Successfully detected {handedness} hand")
-            
+
+            confidence = result.handedness[0][0].score if result.handedness else 1.0
+            logger.info(f"Successfully detected {handedness} hand (score={confidence:.2f})")
+
             return {
                 "success": True,
                 "handedness": handedness,
                 "landmarks": landmarks,
                 "features": features,
                 "overlay": f"data:image/png;base64,{overlay_base64}",
-                "confidence": results.multi_handedness[0].classification[0].score if results.multi_handedness else 1.0
+                "confidence": confidence,
             }
             
         except Exception as e:
@@ -168,26 +175,20 @@ class PalmDetector:
     def _extract_landmarks(self, hand_landmarks, image_shape: Tuple[int, int, int]) -> Dict[str, Dict[str, float]]:
         """
         Extract landmarks into a readable dictionary.
-        
-        Args:
-            hand_landmarks: Mediapipe hand landmarks object
-            image_shape: Shape of the image (height, width, channels)
-            
-        Returns:
-            Dictionary mapping landmark names to coordinates
+        Works with the Tasks API NormalizedLandmark list.
         """
-        h, w, _ = image_shape
+        h, w = image_shape[:2]
         landmarks = {}
-        
-        for idx, landmark in enumerate(hand_landmarks.landmark):
+
+        for idx, landmark in enumerate(hand_landmarks):
             name = self.LANDMARK_NAMES.get(idx, f"landmark_{idx}")
             landmarks[name] = {
                 'x': int(landmark.x * w),
                 'y': int(landmark.y * h),
                 'z': landmark.z,
-                'visibility': landmark.visibility if hasattr(landmark, 'visibility') else 1.0
+                'visibility': 1.0
             }
-        
+
         return landmarks
     
     def _calculate_palm_features(self, landmarks: Dict[str, Dict[str, float]]) -> Dict[str, Any]:
@@ -277,29 +278,31 @@ class PalmDetector:
         
         return lines
     
+    # Hand connections for drawing (Tasks API doesn't expose HAND_CONNECTIONS)
+    HAND_CONNECTIONS = [
+        (0,1),(1,2),(2,3),(3,4),
+        (5,6),(6,7),(7,8),
+        (9,10),(10,11),(11,12),
+        (13,14),(14,15),(15,16),
+        (17,18),(18,19),(19,20),
+        (0,5),(5,9),(9,13),(13,17),(0,17),
+    ]
+
     def _draw_landmarks(self, image: np.ndarray, hand_landmarks) -> np.ndarray:
         """
-        Draw landmarks on the image for visualization.
-        
-        Args:
-            image: Original BGR image
-            hand_landmarks: Mediapipe hand landmarks object
-            
-        Returns:
-            Image with landmarks drawn
+        Draw landmarks on the image using Tasks API NormalizedLandmark list.
         """
-        # Make a copy to avoid modifying original
         annotated = image.copy()
-        
-        # Draw landmarks
-        self.mp_draw.draw_landmarks(
-            annotated,
-            hand_landmarks,
-            self.mp_hands.HAND_CONNECTIONS,
-            self.mp_draw.DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=2),
-            self.mp_draw.DrawingSpec(color=(255, 0, 0), thickness=2)
-        )
-        
+        h, w = image.shape[:2]
+
+        pts = [(int(lm.x * w), int(lm.y * h)) for lm in hand_landmarks]
+
+        for start, end in self.HAND_CONNECTIONS:
+            cv2.line(annotated, pts[start], pts[end], (0, 255, 0), 2)
+
+        for pt in pts:
+            cv2.circle(annotated, pt, 4, (255, 0, 0), -1)
+
         return annotated
     
     def get_hand_orientation(self, landmarks: Dict[str, Dict[str, float]]) -> str:
